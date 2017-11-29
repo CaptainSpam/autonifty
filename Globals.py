@@ -5,6 +5,7 @@ related to or derived from them.
 '''
 
 import time
+import datetime
 import ConfigParser
 import os
 
@@ -60,23 +61,51 @@ CONFIG_DEFAULTS = {
 
 config = ConfigParser.RawConfigParser(defaults=CONFIG_DEFAULTS, allow_no_value=True)
 config_read = False
+today = None
 
 def get_today():
     '''
-    Returns a tuple describing what "today" is.  That is, what AutoNifty thinks
-    the current day's comic should be, if said comic exists, after accounting
-    for the local time zone, the exact time an update should occur, and other
-    stuff like that.
-
-    The tuple will be in filename order, which is to say (YYYY, MM, DD).
+    Returns the "today" tuple.  Will generate it if it hasn't been generated
+    yet.
     '''
-    ###
-    # TODO: Need to get a configuration file to adjust the update time, time
-    # zone, etc!
-    ###
-    now = time.localtime()
+    global today
 
-    return (now.tm_year, now.tm_mon, now.tm_mday)
+    if today is None:
+        _generate_today()
+
+    return today
+
+def _generate_today():
+    '''
+    Generates a tuple describing what "today" is.  That is, what AutoNifty
+    thinks the current day's comic should be, if said comic exists, after
+    accounting for the local time zone, the exact time an update should occur,
+    and other stuff like that.
+
+    The tuple will be in filename order, which is to say (YYYY, MM, DD).  It
+    can be retrieved with the get_today function.
+    '''
+    global config, today
+
+    # First, get UTC time and apply the current time zone offset to get what
+    # time it is "now".
+    now = datetime.datetime.utcnow()
+    tzoffset = config.getint('AutoNifty', 'tzoffset')
+    hours = tzoffset / 100
+    minutes = tzoffset % 100
+    now += datetime.timedelta(hours=hours, minutes=minutes)
+
+    # Now, determine what the update time is.  If "now" is before the update
+    # time, rewind a day.
+    updatetime = config.getint('AutoNifty', 'updatetime')
+    updatehour = updatetime / 100
+    updateminute = updatetime % 100
+
+    if now.hour < updatehour or (now.hour == updatehour and now.minute < updateminute):
+        now -= datetime.timedelta(days=1)
+
+    # Now, spit that out as a tuple!
+    today = (now.year, now.month, now.day)
 
 def read_config(filename):
     '''
