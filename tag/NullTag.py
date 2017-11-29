@@ -14,9 +14,11 @@ class NullTag(Tag):
         if(not match or not match.group(1)):
             return "UNMATCHED NULLTAG!"
 
-        toreturn = match.group(1)
+        toreturn = '***' + match.group(1)
 
         if(match.group(2)):
             toreturn += " " + format(match.group(2))
+
+        toreturn += '***'
 
         return toreturn
