@@ -12,8 +12,7 @@ import os
 CONFIG_DEFAULTS = {
             'url':'about:blank',
             'basedir':'/home/change_this_setting_seriously',
-            'updatetime':'2300',
-            'updateday':'same',
+            'updatetime':'0001',
             'tzoffset':str(int(float(-time.timezone) / 36)),
             'captionsfile':'captions.txt',
             'comicsdir':'comics/',
@@ -41,7 +40,6 @@ CONFIG_DEFAULTS = {
             'storystart':'storystart.gif',
             'dailytemplate':'dailytemplate.html',
             'jsprefix':'af_',
-            'storylineusedate':'0',
             'storylineusejavascript':'1',
             'storylineuseplain':'1',
             'bigcalwidth':'3',
@@ -108,8 +106,6 @@ def read_config(filename):
     checking = 'usecssnavbuttons'
     try:
         config.getboolean('AutoNifty', checking)
-        checking = 'storylineusedate'
-        config.getboolean('AutoNifty', checking)
         checking = 'storylineusejavascript'
         config.getboolean('AutoNifty', checking)
         checking = 'storylineuseplain'
@@ -124,16 +120,26 @@ def read_config(filename):
     # The time zone offset has to be an integer between -1200 and 1200.
     timezone = 0
     try:
-        timezone = int(config.getint('AutoNifty', 'tzoffset'))
+        timezone = config.getint('AutoNifty', 'tzoffset')
     except ValueError:
         raise ValueError("The tzoffset config option MUST be something that resolves to an integer!")
 
     if timezone < -1200 or timezone > 1200 or abs(timezone) % 100 >= 60:
         raise ValueError("{} isn't a valid timezone offset!".format(timezone))
 
-    # updateday must be "same" or "previous".
-    if config.get('AutoNifty', 'updateday') not in ['same', 'previous']:
-        raise ValueError("{} isn't a valid updateday setting! (it has to be either 'same' or 'previous')".format(config.get('AutoNifty', 'updateday')))
+    # The update time has to be, y'know, a time.  However, we allow the user to
+    # specify this time with a space in it, so just in case...
+    updatetime = "".join(config.get('AutoNifty', 'updatetime').split())
+    try:
+        updatetime = int(updatetime)
+    except ValueError:
+        raise ValueError("The updatetime config option MUST be something that resolves to an integer!")
+
+    if updatetime < 0 or updatetime > 2400 or updatetime % 100 >= 60:
+        raise ValueError("{} isn't a valid update time!".format(updatetime))
+
+    # If it's valid, stuff it back in, corrected.
+    config.set('AutoNifty', 'updatetime', updatetime)
 
     # If all goes well, mark the config as read!
     config_read = True
