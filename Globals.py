@@ -172,22 +172,46 @@ def read_config(filename):
 
     # I guess we'll allow basedir to be relative if the user's really really
     # crazy, but we should still warn them.
-    basedir = config.get('AutoNifty', 'basedir')
-    workdir = config.get('AutoNifty', 'workdir')
-    sitedir = config.get('AutoNifty', 'sitedir')
-    if not basedir[0] == '/':
+    curdir = config.get('AutoNifty', 'basedir')
+    if not curdir[0] == '/':
         print "WARNING: The basedir config option doesn't start with a slash, so we're assuming that's a relative path..."
 
     # However, it DOES have to END with a slash.  Let's clean that up now.
-    if not basedir[-1] == '/':
-        config.set('AutoNifty', 'basedir', basedir + '/')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'basedir', curdir + '/')
 
-    # Same with workdir and sitedir.
-    if not workdir[-1] == '/':
-        config.set('AutoNifty', 'workdir', workdir + '/')
+    # Same with all other directory-based things.
+    curdir = config.get('AutoNifty', 'workdir')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'workdir', curdir + '/')
 
-    if not sitedir[-1] == '/':
-        config.set('AutoNifty', 'sitedir', sitedir + '/')
+    curdir = config.get('AutoNifty', 'sitedir')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'sitedir', curdir + '/')
+
+    curdir = config.get('AutoNifty', 'comicsdir')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'comicsdir', curdir + '/')
+
+    curdir = config.get('AutoNifty', 'imagedir')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'imagedir', curdir + '/')
+
+    curdir = config.get('AutoNifty', 'archivedir')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'archivedir', curdir + '/')
+
+    curdir = config.get('AutoNifty', 'uploaddir')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'uploaddir', curdir + '/')
+
+    curdir = config.get('AutoNifty', 'parsedir')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'parsedir', curdir + '/')
+
+    curdir = config.get('AutoNifty', 'datadir')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'datadir', curdir + '/')
 
     # If all goes well, mark the config as read!
     config_read = True
