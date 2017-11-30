@@ -170,5 +170,80 @@ def read_config(filename):
     # If it's valid, stuff it back in, corrected.
     config.set('AutoNifty', 'updatetime', updatetime)
 
+    # I guess we'll allow basedir to be relative if the user's really really
+    # crazy, but we should still warn them.
+    basedir = config.get('AutoNifty', 'basedir')
+    workdir = config.get('AutoNifty', 'workdir')
+    sitedir = config.get('AutoNifty', 'sitedir')
+    if not basedir[0] == '/':
+        print "WARNING: The basedir config option doesn't start with a slash, so we're assuming that's a relative path..."
+
+    # However, it DOES have to END with a slash.  Let's clean that up now.
+    if not basedir[-1] == '/':
+        config.set('AutoNifty', 'basedir', basedir + '/')
+
+    # Same with workdir and sitedir.
+    if not workdir[-1] == '/':
+        config.set('AutoNifty', 'workdir', workdir + '/')
+
+    if not sitedir[-1] == '/':
+        config.set('AutoNifty', 'sitedir', sitedir + '/')
+
     # If all goes well, mark the config as read!
     config_read = True
+
+def get_directory_for(configthingy):
+    '''
+    Gets the full, effective path for a configuration directive.  That is, this
+    will return the given config value with basedir prepended, as well as any
+    other dependent directories (archivedir and comicsdir would have sitedir
+    prepended, etc), unless the directory starts with a forward slash, in which
+    case the path is assumed to be absolute regardless.
+    '''
+    global config, config_read
+    if not config_read:
+        raise RuntimeError("The config file hasn't been properly read yet!")
+
+    # First off, basedir.  Everything comes from here (unless it's an absolute
+    # path, but that won't happen often, hopefully).
+    basedir = config.get('AutoNifty', 'basedir')
+
+    # The second-level directories.
+    sitedir = _attach_path(basedir, config.get('AutoNifty', 'sitedir'))
+    workdir = _attach_path(basedir, config.get('AutoNifty', 'workdir'))
+
+    # The first-or-second-level family!
+    if configthingy == 'basedir':
+        return basedir
+    elif configthingy == 'sitedir':
+        return sitedir
+    elif configthingy == 'workdir':
+        return workdir
+
+    # The sitedir family!
+    elif configthingy == 'comicsdir':
+        return _attach_path(sitedir, config.get('AutoNifty', 'comicsdir'))
+    elif configthingy == 'imagedir':
+        return _attach_path(sitedir, config.get('AutoNifty', 'imagedir'))
+    elif configthingy == 'archivedir':
+        return _attach_path(sitedir, config.get('AutoNifty', 'archivedir'))
+
+    # The workdir family!
+    elif configthingy == 'parsedir':
+        return _attach_path(workdir, config.get('AutoNifty', 'parsedir'))
+    elif configthingy == 'datadir':
+        return _attach_path(workdir, config.get('AutoNifty', 'datadir'))
+    elif configthingy == 'uploaddir':
+        return _attach_path(workdir, config.get('AutoNifty', 'uploaddir'))
+
+    else:
+        # Anything else is invalid.
+        raise RuntimeError("{} isn't a valid directory-based config option!".format(configthingy))
+
+def _attach_path(basepath, newpath):
+    # If newpath starts with a forward slash, it's absolute, so just return
+    # that.  Otherwise, attach basepath to the front of it.
+    if newpath[0] == '/':
+        return newpath
+    else:
+        return basepath + newpath
