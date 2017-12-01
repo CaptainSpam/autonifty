@@ -97,6 +97,61 @@ class ComicBucket(object):
         comics = self.get_comics_for(key)
         return (key, comics)
 
+    def filter_bucket(self):
+        '''
+        This moves any comic files that should now be considered live from the
+        uploaddir into the comicsdir so they may later be indexed by
+        read_bucket().  As such, this makes no changes to the internal state of
+        ComicBucket.
+
+        It does, however, return the number of comic files moved.  This is in no
+        way guaranteed to have any relation to the number of new dates with
+        comic updates.
+        '''
+        uploaddir = Globals.get_directory_for('uploaddir')
+        comicsdir = Globals.get_directory_for('comicsdir')
+        today = Globals.get_today()
+
+        # All files report in!
+        filelist = glob.glob(uploaddir + '*')
+        filesmoved = 0
+
+        # And just what ARE those files?  Funny you should ask...
+        for f in filelist:
+            if not os.path.isfile(f):
+                continue
+
+            # Strip it down to just the name, but keep the full path.  We may
+            # need it in a sec.
+            fname = f[len(uploaddir):]
+
+            match = re.search(DATESTAMP_RE, fname)
+            if match is None:
+                # Bad file name?  No datestamp?
+                print "filter_bucket: Comic file {} has no datestamp in its name, ignoring...".format(fname)
+                continue
+            else:
+                # Bad date?
+                year = int(match.group('year'))
+                month = int(match.group('month'))
+                day = int(match.group('day'))
+
+                try:
+                    datetime.datetime(year=year, month=month, day=day)
+                except ValueError:
+                    print "filter_bucket: Comic file {} contains an invalid date, ignoring...".format(fname)
+                    continue
+
+                # So it's a valid filename.  Is it, however, TODAY (or earlier)???
+                if year < today[0] or (year == today[0] and month < today[1]) or (year == today[0] and month == today[1] and day <= today[2]):
+                    # It's today!  It's today!  Hooray!  Hooray!  Move the file!
+                    os.rename(f, comicsdir + fname)
+                    filesmoved += 1
+
+        # Done!  Return how many we got.  I don't know why, maybe we want to
+        # report that later.
+        return filesmoved
+
     def read_bucket(self):
         '''
         This reads in the bucket as it exists on the filesystem right now.
@@ -127,7 +182,7 @@ class ComicBucket(object):
             match = re.search(DATESTAMP_RE, f)
 
             if match is None:
-                print "Comic file {} has no datestamp in its name, ignoring...".format(f)
+                print "read_bucket: Comic file {} has no datestamp in its name, ignoring...".format(f)
                 continue
             else:
                 # Okay, we've got a date.  Is it legal?
@@ -135,7 +190,7 @@ class ComicBucket(object):
                     datetime.datetime(year=int(match.group('year')), month=int(match.group('month')), day=int(match.group('day')))
                 except ValueError:
                     # Whoops.  That's not valid at all.
-                    print "Comic file {} contains an invalid date, ignoring...".format(f)
+                    print "read_bucket: Comic file {} contains an invalid date, ignoring...".format(f)
                     continue
 
                 # It's valid!  Add the date and the file in!  First, initialize
