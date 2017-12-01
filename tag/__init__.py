@@ -10,7 +10,7 @@ TAGS = {}
 filelist = glob.glob('tag/*Tag.py')
 
 for f in filelist:
-    f = f.lstrip("tag/").rstrip(".py")
+    f = f[len("tag/"):-len(".py")]
 
     try:
         module = importlib.import_module("tag.{}".format(f))

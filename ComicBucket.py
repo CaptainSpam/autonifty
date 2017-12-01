@@ -121,7 +121,7 @@ class ComicBucket(object):
                 # No warning, though.  This is okay.
                 continue
 
-            f = f.lstrip(comicsdir)
+            f = f[len(comicsdir):]
 
             # Does the filename contain a datestamp?  That's eight digits.
             match = re.search(DATESTAMP_RE, f)
