@@ -236,7 +236,7 @@ class ComicBucket(object):
             # swfs.  That point is not now.
             #
             # TODO: Work out a caption and/or title-text system!
-            return "<img src=\"{}\" class=\"comicimage\" />\n<br />\n".format(Globals.config.get('AutoNifty', 'url') + Globals.config.get('AutoNifty', 'comicswebpath') + comic_file)
+            return "<img src=\"{}\" class=\"comicimage\" />\n<br />\n".format(Globals.get_webpath_for('comicswebpath') + comic_file)
 
     def get_html_for_tuple(self, comic_tuple):
         '''

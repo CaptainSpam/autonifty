@@ -254,20 +254,12 @@ def get_directory_for(configthingy):
         return workdir
 
     # The sitedir family!
-    elif configthingy == 'comicsdir':
-        return _attach_path(sitedir, config.get('AutoNifty', 'comicsdir'))
-    elif configthingy == 'imagedir':
-        return _attach_path(sitedir, config.get('AutoNifty', 'imagedir'))
-    elif configthingy == 'archivedir':
-        return _attach_path(sitedir, config.get('AutoNifty', 'archivedir'))
+    elif configthingy in ['comicsdir', 'imagedir', 'archivedir']:
+        return _attach_path(sitedir, config.get('AutoNifty', configthingy))
 
     # The workdir family!
-    elif configthingy == 'parsedir':
-        return _attach_path(workdir, config.get('AutoNifty', 'parsedir'))
-    elif configthingy == 'datadir':
-        return _attach_path(workdir, config.get('AutoNifty', 'datadir'))
-    elif configthingy == 'uploaddir':
-        return _attach_path(workdir, config.get('AutoNifty', 'uploaddir'))
+    elif configthingy in ['parsedir', 'datadir', 'uploaddir']:
+        return _attach_path(workdir, config.get('AutoNifty', configthingy))
 
     else:
         # Anything else is invalid.
@@ -280,3 +272,18 @@ def _attach_path(basepath, newpath):
         return newpath
     else:
         return basepath + newpath
+
+def get_webpath_for(configthingy):
+    '''
+    Gets the absolute URL for a given web path (as per config).
+    '''
+    global config
+
+    # This one's simple.  We've only got a few possibilities.
+    url = config.get('AutoNifty', 'url')
+
+    if configthingy in ['comicswebpath', 'imagewebpath', 'archivewebpath']:
+        return url + config.get('AutoNifty', configthingy)
+    else:
+        raise RuntimeError("{} isn't a valid webpath-based config option!".format(configthingy))
+
