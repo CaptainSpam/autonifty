@@ -18,7 +18,10 @@ CONFIG_DEFAULTS = {
             'captionsfile':'captions.txt',
             'comicsdir':'comics/',
             'imagedir':'images/',
-            'dailydir':'d/',
+            'archivedir':'d/',
+            'comicswebpath':'',
+            'imagewebpath':'',
+            'archivewebpath':'',
             'uploaddir':'comics/',
             'sitedir':'public_html/',
             'workdir':'workspace/',
@@ -176,50 +179,51 @@ def read_config(filename):
     if not curdir[0] == '/':
         print "WARNING: The basedir config option doesn't start with a slash, so we're assuming that's a relative path..."
 
-    # However, it DOES have to END with a slash.  Let's clean that up now.
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'basedir', curdir + '/')
+    # All directories should END with a slash.  Let's clean that up now.
+    _clean_file_path('basedir')
+    _clean_file_path('workdir')
+    _clean_file_path('sitedir')
+    _clean_file_path('comicsdir')
+    _clean_file_path('imagedir')
+    _clean_file_path('archivedir')
+    _clean_file_path('uploaddir')
+    _clean_file_path('parsedir')
+    _clean_file_path('datadir')
 
-    # Same with all other directory-based things.
-    curdir = config.get('AutoNifty', 'workdir')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'workdir', curdir + '/')
+    # The URL should, too, so for now we'll treat that the same as a directory.
+    _clean_file_path('url')
 
-    curdir = config.get('AutoNifty', 'sitedir')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'sitedir', curdir + '/')
-
-    curdir = config.get('AutoNifty', 'comicsdir')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'comicsdir', curdir + '/')
-
-    curdir = config.get('AutoNifty', 'imagedir')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'imagedir', curdir + '/')
-
-    curdir = config.get('AutoNifty', 'archivedir')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'archivedir', curdir + '/')
-
-    curdir = config.get('AutoNifty', 'uploaddir')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'uploaddir', curdir + '/')
-
-    curdir = config.get('AutoNifty', 'parsedir')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'parsedir', curdir + '/')
-
-    curdir = config.get('AutoNifty', 'datadir')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'datadir', curdir + '/')
-
-    # The URL must also end with a slash.
-    curdir = config.get('AutoNifty', 'url')
-    if not curdir[-1] == '/':
-        config.set('AutoNifty', 'url', curdir + '/')
+    # Get the web paths cleaned up, too.
+    _clean_web_path('comicswebpath', 'comicsdir')
+    _clean_web_path('imagewebpath', 'imagedir')
+    _clean_web_path('archivewebpath', 'archivedir')
 
     # If all goes well, mark the config as read!
     config_read = True
+
+def _clean_file_path(fileconfig):
+    global config
+
+    curdir = config.get('AutoNifty', fileconfig)
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', fileconfig, curdir + '/')
+
+def _clean_web_path(webconfig, fileconfig):
+    global config
+
+    # The web paths, by default, mimic their on-filesystem counterparts.  If
+    # they aren't defined (or are blank), just copy them over.  Also, they each
+    # need to end with a slash, as usual, but they shouldn't START with a slash,
+    # as the URL config option should cover that.
+    curdir = config.get('AutoNifty', webconfig)
+    if not curdir:
+        curdir = config.get('AutoNifty', fileconfig)
+    if curdir[0] == '/':
+        curdir = curdir[1:]
+    if not curdir[-1] == '/':
+        curdir += '/'
+    config.set('AutoNifty', webconfig, curdir)
+
 
 def get_directory_for(configthingy):
     '''
