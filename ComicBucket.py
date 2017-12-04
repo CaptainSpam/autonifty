@@ -211,3 +211,44 @@ class ComicBucket(object):
         # time we need a comic.
         self._sorted_keys = sorted(self._active_comics.keys())
 
+    def get_html_for_comic(self, comic_file):
+        '''
+        Gets the HTML that should be output for a given comic file.  As of the
+        current design, any .txt or .html file (or .text or .htm, just for
+        completeness) will be dumped out as-is (with a carriage return at the
+        end), and any other file will be the src of an img tag.
+        '''
+
+        # First, the text files.
+        if comic_file.endswith('.html') or comic_file.endswith('.htm') or comic_file.endswith('.text') or comic_file.endswith('.txt'):
+            # For this, we MUST be able to open the file.  If not, we have to
+            # return an error.
+            try:
+                f = open(Globals.get_directory_for("comicsdir") + comic_file, 'r')
+                # We'll just dump the entire file for now.  I really really hope
+                # you don't have need for a file big enough to exhaust memory.
+                return f.read() + "\n"
+            except Exception as e:
+                return "ERROR: Couldn't open text file {} for output: {}".format(comic_file, e.strerror)
+        else:
+            # It's anything else, so it goes in an img.  Maybe at some point we
+            # can do something for those poor souls still trying to dump out
+            # swfs.  That point is not now.
+            #
+            # TODO: Work out a caption and/or title-text system!
+            return "<img src=\"{}\" class=\"comicimage\" />\n<br />\n".format(Globals.config.get('AutoNifty', 'url') + Globals.get_directory_for("comicsdir") + comic_file)
+
+    def get_html_for_tuple(self, comic_tuple):
+        '''
+        Gets the HTML that should be output for a given comic tuple, as
+        retrieved from the get_first/last/next/prev family.  That is, this just
+        calls get_html_for_comic() on each member of the comic file list and
+        concatenates all the output.
+        '''
+        toreturn = ""
+
+        for comic in comic_tuple[1]:
+            toreturn += self.get_html_for_comic(comic)
+
+        return toreturn
+
