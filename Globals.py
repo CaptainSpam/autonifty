@@ -213,6 +213,11 @@ def read_config(filename):
     if not curdir[-1] == '/':
         config.set('AutoNifty', 'datadir', curdir + '/')
 
+    # The URL must also end with a slash.
+    curdir = config.get('AutoNifty', 'url')
+    if not curdir[-1] == '/':
+        config.set('AutoNifty', 'url', curdir + '/')
+
     # If all goes well, mark the config as read!
     config_read = True
 
