@@ -229,7 +229,8 @@ class ComicBucket(object):
                 # you don't have need for a file big enough to exhaust memory.
                 return f.read() + "\n"
             except Exception as e:
-                return "ERROR: Couldn't open text file {} for output: {}".format(comic_file, e.strerror)
+                print "ERROR: Couldn't open text file {} for output: {}".format(comic_file, e.strerror)
+                return "<p><b>ERROR:</b> Couldn't open text file {} for output!</p>\n".format(comic_file)
         else:
             # It's anything else, so it goes in an img.  Maybe at some point we
             # can do something for those poor souls still trying to dump out
