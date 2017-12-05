@@ -9,4 +9,24 @@ class Tag(object):
         self._tagname = "Tag"
 
     def do_tag(self, match, parser):
+        '''
+        Does tag stuff.  This gets the required match data and returns whatever
+        should go in this tag's place.  The Parser will know what to do with it.
+        '''
+        pass
+
+    def reset_for_day(self):
+        '''
+        Tags are instanced once per parsing session in the current
+        implementation.  This method resets anything a tag needs reset when
+        starting on a new comic day.  Just in case.
+        '''
+        pass
+
+    def reset_for_page(self):
+        '''
+        Tags are instanced once per parsing session in the current
+        implementation.  This method resets anything a tag needs reset when
+        starting on a new page that isn't a new comic day.
+        '''
         pass

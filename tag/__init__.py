@@ -18,3 +18,11 @@ for f in filelist:
         TAGS[f] = classFromModule()
     except:
         print "Couldn't import tag named {}, skipping...".format(f)
+
+def reset_tags_for_day():
+    for t in TAGS:
+        TAGS[t].reset_for_day()
+
+def reset_tags_for_page():
+    for t in TAGS:
+        TAGS[t].reset_for_page()
